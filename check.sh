@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Fails unless every CUDA extension in every wheel has kernels for each of REQUIRED_ARCHS.
 set -euo pipefail
-REQUIRED_ARCHS=$(grep "^REQUIRED_ARCHS=" pins.env | cut -d= -f2-)
+REQUIRED_ARCHS=$(grep "^REQUIRED_ARCHS=" "$(dirname "$0")/pins.env" | cut -d= -f2-)
+[ -n "$REQUIRED_ARCHS" ] || { echo "REQUIRED_ARCHS not found in pins.env"; exit 1; }
 dir=$1; fail=0; n=0
 for whl in "$dir"/*.whl; do
   tmp=$(mktemp -d); python3 -m zipfile -e "$whl" "$tmp"
