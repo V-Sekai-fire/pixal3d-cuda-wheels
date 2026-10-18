@@ -1,0 +1,40 @@
+name: Build CUDA wheels
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [pins.env, build.sh, .github/workflows/build.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  wheels:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Free disk space
+        run: |
+          sudo -S -p '' rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo -S -p '' docker image prune --all --force
+          df -h /
+
+      - name: Build wheels in the CUDA devel image
+        run: |
+          # pins.env is a docker --env-file (literal values, no quotes), so read it with grep, not source
+          image=$(grep '^CUDA_IMAGE=' pins.env | cut -d= -f2-)
+          docker run --rm -v "$PWD:/work" -w /work --env-file pins.env "$image" bash build.sh
+
+      - name: Check every wheel carries the required GPU architectures
+        run: bash check.sh dist
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="wheels-$(git rev-parse --short=7 HEAD)"
+          (cd dist && sha256sum *.whl > SHA256SUMS)
+          gh release create "$tag" dist/*.whl dist/SHA256SUMS --title "$tag" --notes-file pins.env --target "$GITHUB_SHA"
