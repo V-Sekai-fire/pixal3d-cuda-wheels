@@ -22,14 +22,11 @@ jobs:
           sudo -S -p '' docker image prune --all --force
           df -h /
 
-      - name: Build wheels in the CUDA devel image
+      - name: Build the wheels and gate their GPU architectures in the CUDA devel image
         run: |
           # pins.env is a docker --env-file (literal values, no quotes), so read it with grep, not source
           image=$(grep '^CUDA_IMAGE=' pins.env | cut -d= -f2-)
           docker run --rm -v "$PWD:/work" -w /work --env-file pins.env "$image" bash build.sh
-
-      - name: Check every wheel carries the required GPU architectures
-        run: bash check.sh dist
 
       - name: Publish release
         env:

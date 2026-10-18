@@ -8,8 +8,11 @@ fetch() { git clone -q "https://github.com/$1.git" "/src/$2" && git -C "/src/$2"
 fetch JeffreyXiang/FlexGEMM flexgemm "$FLEXGEMM_SHA"
 fetch JeffreyXiang/CuMesh cumesh "$CUMESH_SHA"
 fetch microsoft/TRELLIS.2 trellis2 "$TRELLIS2_SHA"
+fetch NVlabs/nvdiffrast nvdiffrast "$NVDIFFRAST_SHA"
+fetch JeffreyXiang/nvdiffrec nvdiffrec "$NVDIFFREC_SHA"
 mkdir -p dist
-for src in /src/flexgemm /src/cumesh /src/trellis2/o-voxel; do
+for src in /src/flexgemm /src/cumesh /src/trellis2/o-voxel /src/nvdiffrast /src/nvdiffrec; do
   pip wheel --no-build-isolation --no-deps -w dist "$src"
 done
+bash check.sh dist
 chmod a+rw dist/*
