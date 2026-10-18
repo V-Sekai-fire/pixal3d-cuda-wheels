@@ -6,7 +6,8 @@ dir=$1; fail=0; n=0
 for whl in "$dir"/*.whl; do
   tmp=$(mktemp -d); python3 -m zipfile -e "$whl" "$tmp"
   while IFS= read -r so; do
-    archs=$(strings -a "$so" | grep -oE 'sm_[0-9]{2,3}a?' | sort -u | tr '\n' ' ')
+    # Host-only libraries (e.g. cumesh/_cumesh_xatlas) carry no sm_ strings; grep finding nothing is not an error.
+    archs=$( { strings -a "$so" | grep -oE 'sm_[0-9]{2,3}a?' || true; } | sort -u | tr '\n' ' ')
     case "$archs" in "") continue;; esac
     n=$((n+1))
     miss=""
