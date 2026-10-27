@@ -15,4 +15,4 @@ for src in /src/flexgemm /src/cumesh /src/trellis2/o-voxel /src/nvdiffrast /src/
   pip wheel --no-build-isolation --no-deps -w dist "$src"
 done
 bash check.sh dist
-chmod a+rw dist/*
+chmod a+rwx dist && chmod a+rw dist/*
